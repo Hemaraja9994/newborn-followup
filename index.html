@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Newborn Hearing Follow-up</title>
+<meta name="description" content="Track every baby through the 1-3-6 newborn hearing plan and send families reminders in Kannada, Telugu, Hindi or English.">
+<meta name="theme-color" content="#17212E">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Noto+Sans+Devanagari:wght@400;600&family=Noto+Sans+Kannada:wght@400;600&family=Noto+Sans+Telugu:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="kit.css">
+<style>
+.counts{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:18px 0 4px}
+@media (max-width:620px){ .counts{grid-template-columns:repeat(2,1fr)} }
+.count{background:var(--surface);border:1px solid var(--line);border-left:5px solid var(--c);border-radius:var(--r-sm);padding:10px 12px;text-align:left;cursor:pointer;font:inherit;color:var(--ink)}
+.count b{display:block;font-size:1.7rem;line-height:1.1;font-variant-numeric:tabular-nums}
+.count span{font-size:.85rem;color:var(--muted)}
+.count[aria-pressed="true"]{box-shadow:inset 0 0 0 2px var(--ink)}
+.track{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:6px;max-width:260px}
+.track i{height:6px;border-radius:3px;background:var(--track)}
+.track i.done{background:var(--ok)} .track i.now{background:var(--c,var(--accent))}
+.msg{white-space:pre-wrap;background:var(--paper);border:1px solid var(--line);border-radius:var(--r-sm);padding:12px;font-size:1rem}
+.riskgrid{display:grid;grid-template-columns:1fr;gap:0 16px}
+@media (min-width:700px){ .riskgrid{grid-template-columns:1fr 1fr} }
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <div class="brand"><img src="icon.svg" width="34" height="34" alt=""><h1><span data-i18n="appName"></span><small data-i18n="appSub"></small></h1></div>
+  <div class="top-tools"><span class="net" id="net" role="status" aria-live="polite"></span><label class="sr" for="lang">Language</label><select id="lang" class="lang"></select></div>
+</div></header>
+
+<main class="wrap">
+  <section class="intro">
+    <h2>No baby lost between the screen and the diagnosis</h2>
+    <p>Most babies who are missed are not missed at the screen. They are lost afterwards, when a refer result is not followed up. This tracker shows who is due or overdue at each step of the 1-3-6 plan and writes a reminder for the family in their language.</p>
+  </section>
+
+  <div class="counts" id="counts" role="group" aria-label="Filter babies by status"></div>
+
+  <div class="side">
+    <aside class="panel" aria-labelledby="addTitle">
+      <h3 id="addTitle">Add a baby</h3>
+      <label class="field" for="bCode">Baby code <span class="hint">Use a hospital number or code, not a name.</span><input type="text" id="bCode" maxlength="30" autocomplete="off"></label>
+      <label class="field" for="bDob">Date of birth<input type="date" id="bDob"></label>
+      <label class="field" for="bLang">Family's language for reminders
+        <select id="bLang"><option value="kn">ಕನ್ನಡ Kannada</option><option value="te">తెలుగు Telugu</option><option value="hi">हिन्दी Hindi</option><option value="en">English</option></select></label>
+      <fieldset><legend>Risk factors <span class="hint" style="display:inline">(tick any)</span></legend><div id="riskBox"></div></fieldset>
+      <p class="err" id="bErr" role="alert"></p>
+      <div class="actions"><button type="button" class="primary" id="bAdd">Add baby</button></div>
+    </aside>
+
+    <section aria-labelledby="listTitle">
+      <div class="head-row"><h3 id="listTitle">Babies <span class="muted small-text" id="filterNote"></span></h3>
+        <div class="actions" style="margin-top:0"><button type="button" class="small" id="csv">Download CSV</button></div></div>
+      <div class="table-scroll panel" style="padding:8px 12px" id="list"></div>
+      <div id="detail" style="margin-top:16px"></div>
+    </section>
+  </div>
+
+  <section class="panel" aria-labelledby="planTitle">
+    <h3 id="planTitle">The 1-3-6 plan</h3>
+    <ul>
+      <li><b>By 1 month:</b> hearing screen (OAE and/or AABR). A refer on the first screen is followed by a rescreen.</li>
+      <li><b>By 3 months:</b> full diagnostic audiological evaluation (including ABR) for any baby who does not pass the screen.</li>
+      <li><b>By 6 months:</b> early intervention (hearing aids, family support, and referral as needed) for babies with confirmed hearing loss.</li>
+      <li><b>Risk factors:</b> babies with risk factors who pass still need hearing monitoring. This tracker schedules a review by 9 months; some risk factors (for example congenital CMV) need earlier review.</li>
+    </ul>
+    <p class="muted small-text">Source: Joint Committee on Infant Hearing. Year 2019 Position Statement: Principles and guidelines for early hearing detection and intervention programs. J Early Hear Detect Interv 2019;4(2):1–44.</p>
+  </section>
+</main>
+
+<footer><div class="wrap">
+  <p data-i18n="disclaimer"></p>
+  <p>Data stays in this browser only. Reminders are copied for you to send; the app sends nothing. Download a CSV regularly as a backup.</p>
+  <p>Family reminder translations are drafts and should be checked by native speakers.</p>
+  <p id="credit"></p>
+</div></footer>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="kit.js"></script>
+<script>
+const I18N_APP = { en:{ appName:"Newborn Hearing Follow-up", appSub:"Screen by 1, diagnose by 3, intervene by 6",
+  disclaimer:"A tracking aid for hearing screening programmes. Follow your programme's protocol and the treating clinician's advice." } };
+const KEY = "nhs-babies";
+const RISKS = ["Family history of permanent childhood hearing loss","NICU stay of more than 5 days","Jaundice needing exchange transfusion","Aminoglycosides for more than 5 days","Birth asphyxia or HIE","ECMO","Infection in pregnancy (CMV, rubella, herpes, syphilis, toxoplasmosis)","Craniofacial anomaly, ear tags or ear pits, cleft lip or palate","Syndrome associated with hearing loss","Bacterial meningitis or other serious infection after birth","Significant head injury","Chemotherapy"];
+const DAY = 864e5;
+let babies = store.get(KEY, []);
+let selId = null, filter = "all";
+const save = () => store.set(KEY, babies);
+const addDays = (iso, n) => new Date(new Date(iso).getTime() + n*DAY).toISOString().slice(0,10);
+const daysBetween = (a, b) => Math.round((new Date(b) - new Date(a)) / DAY);
+
+/* Work out the next step for a baby */
+function nextStep(b){
+  const today = todayISO();
+  const scr = b.screens.slice().sort((x,y)=>x.date.localeCompare(y.date));
+  const last = scr[scr.length-1];
+  const steps = {screen:false, diag:false, interv:false};
+  let step, due, stage;
+  if (b.interv){ steps.screen = steps.diag = steps.interv = true; return {key:"done", label:"In intervention", due:null, stage:3, steps}; }
+  if (b.diag){
+    steps.screen = steps.diag = true;
+    if (b.diag.result === "normal"){
+      if (b.risk.length && !b.review) return {key:"monitor", label:"Monitoring review", due: addDays(b.dob, 270), stage:3, steps};
+      return {key:"done", label: b.review ? "Monitoring done" : "Hearing normal", due:null, stage:3, steps};
+    }
+    return {key:"interv", label:"Start intervention", due: addDays(b.dob, 180), stage:3, steps};
+  }
+  if (!last) return {key:"screen", label:"Screen", due: addDays(b.dob, 30), stage:1, steps};
+  const refer = last.R === "refer" || last.L === "refer";
+  if (!refer){
+    steps.screen = true;
+    if (b.risk.length && !b.review) return {key:"monitor", label:"Monitoring review", due: addDays(b.dob, 270), stage:3, steps};
+    return {key:"done", label:"Passed", due:null, stage:1, steps};
+  }
+  if (scr.length < 2) return {key:"rescreen", label:"Rescreen", due: addDays(last.date, 14), stage:1, steps};   // rescreen within 2 weeks of a refer
+  steps.screen = true;
+  return {key:"diag", label:"Diagnostic ABR", due: addDays(b.dob, 90), stage:2, steps};
+}
+function urgency(n){
+  if (n.key === "done") return {k:"done", c:"var(--ok)", pill:"ok", text:"Done"};
+  const d = daysBetween(todayISO(), n.due);
+  if (d < 0) return {k:"overdue", c:"var(--high)", pill:"high", text:`Overdue by ${-d} day${d===-1?"":"s"}`};
+  if (d <= 14) return {k:"soon", c:"var(--mid)", pill:"mid", text: d === 0 ? "Due today" : `Due in ${d} day${d===1?"":"s"}`};
+  return {k:"ontrack", c:"var(--accent)", pill:"info", text:`Due ${fmtDate(n.due)}`};
+}
+
+/* Family reminders (draft translations) */
+const MSG = {
+  screen:{ en:"Namaste. Your baby {code} needs a hearing screening test. It is quick and painless and is best done before {due}. Please visit the hearing clinic.",
+    kn:"ನಮಸ್ಕಾರ. ನಿಮ್ಮ ಮಗು {code} ಗೆ ಶ್ರವಣ ತಪಾಸಣೆ ಬೇಕು. ಇದು ಬೇಗ ಮುಗಿಯುತ್ತದೆ, ನೋವಿಲ್ಲ. {due} ಒಳಗೆ ಮಾಡಿಸುವುದು ಉತ್ತಮ. ದಯವಿಟ್ಟು ಶ್ರವಣ ಚಿಕಿತ್ಸಾಲಯಕ್ಕೆ ಬನ್ನಿ.",
+    te:"నమస్కారం. మీ బిడ్డ {code} కి వినికిడి స్క్రీనింగ్ పరీక్ష అవసరం. ఇది త్వరగా అయిపోతుంది, నొప్పి ఉండదు. {due} లోపు చేయించడం మంచిది. దయచేసి వినికిడి క్లినిక్‌కు రండి.",
+    hi:"नमस्ते। आपके शिशु {code} की श्रवण जाँच (हियरिंग स्क्रीनिंग) होनी है। यह जल्दी होती है और दर्द नहीं होता। {due} से पहले कराना सबसे अच्छा है। कृपया श्रवण क्लिनिक आएँ।" },
+  rescreen:{ en:"Namaste. Your baby {code} needs a repeat hearing screen. Many babies pass the second time, but it is important to do it before {due}. Please visit the hearing clinic.",
+    kn:"ನಮಸ್ಕಾರ. ನಿಮ್ಮ ಮಗು {code} ಗೆ ಮತ್ತೊಮ್ಮೆ ಶ್ರವಣ ತಪಾಸಣೆ ಬೇಕು. ಹಲವು ಮಕ್ಕಳು ಎರಡನೇ ಬಾರಿ ಉತ್ತೀರ್ಣರಾಗುತ್ತಾರೆ, ಆದರೆ {due} ಒಳಗೆ ಮಾಡಿಸುವುದು ಮುಖ್ಯ. ದಯವಿಟ್ಟು ಶ್ರವಣ ಚಿಕಿತ್ಸಾಲಯಕ್ಕೆ ಬನ್ನಿ.",
+    te:"నమస్కారం. మీ బిడ్డ {code} కి మళ్లీ వినికిడి స్క్రీనింగ్ అవసరం. చాలామంది పిల్లలు రెండోసారి పాస్ అవుతారు, కానీ {due} లోపు చేయించడం ముఖ్యం. దయచేసి వినికిడి క్లినిక్‌కు రండి.",
+    hi:"नमस्ते। आपके शिशु {code} की श्रवण जाँच दोबारा होनी है। कई शिशु दूसरी बार में पास हो जाते हैं, पर {due} से पहले कराना ज़रूरी है। कृपया श्रवण क्लिनिक आएँ।" },
+  diag:{ en:"Namaste. Your baby {code} did not pass the hearing screen. This does not always mean a hearing problem, but a detailed hearing test (ABR) is needed before {due}. Early testing gives your baby the best chance to learn to talk. Please book with the audiologist.",
+    kn:"ನಮಸ್ಕಾರ. ನಿಮ್ಮ ಮಗು {code} ಶ್ರವಣ ತಪಾಸಣೆಯಲ್ಲಿ ಉತ್ತೀರ್ಣವಾಗಿಲ್ಲ. ಇದರರ್ಥ ಯಾವಾಗಲೂ ಶ್ರವಣದೋಷ ಎಂದಲ್ಲ, ಆದರೆ {due} ಒಳಗೆ ವಿವರವಾದ ಶ್ರವಣ ಪರೀಕ್ಷೆ (ABR) ಅಗತ್ಯ. ಬೇಗನೆ ಪರೀಕ್ಷಿಸಿದರೆ ಮಗು ಮಾತು ಕಲಿಯಲು ಉತ್ತಮ ಅವಕಾಶ. ದಯವಿಟ್ಟು ಶ್ರವಣಶಾಸ್ತ್ರಜ್ಞರ ಭೇಟಿ ನಿಗದಿಪಡಿಸಿ.",
+    te:"నమస్కారం. మీ బిడ్డ {code} వినికిడి స్క్రీనింగ్‌లో పాస్ కాలేదు. దీని అర్థం ఎప్పుడూ వినికిడి లోపం అని కాదు, కానీ {due} లోపు వివరమైన వినికిడి పరీక్ష (ABR) అవసరం. త్వరగా పరీక్షిస్తే బిడ్డ మాట్లాడటం నేర్చుకోవడానికి మంచి అవకాశం. దయచేసి ఆడియాలజిస్ట్ అపాయింట్‌మెంట్ తీసుకోండి.",
+    hi:"नमस्ते। आपका शिशु {code} श्रवण जाँच में पास नहीं हुआ। इसका मतलब हमेशा सुनने में कमी नहीं होता, पर {due} से पहले विस्तृत श्रवण जाँच (ABR) ज़रूरी है। जल्दी जाँच से शिशु को बोलना सीखने का सबसे अच्छा मौका मिलता है। कृपया ऑडियोलॉजिस्ट से समय लें।" },
+  interv:{ en:"Namaste. The tests show that your baby {code} has hearing loss. Starting hearing aids and support before {due} helps your baby learn to listen and talk. Please meet the audiologist to plan the next steps.",
+    kn:"ನಮಸ್ಕಾರ. ಪರೀಕ್ಷೆಗಳ ಪ್ರಕಾರ ನಿಮ್ಮ ಮಗು {code} ಗೆ ಶ್ರವಣದೋಷವಿದೆ. {due} ಒಳಗೆ ಶ್ರವಣ ಸಾಧನ ಮತ್ತು ಬೆಂಬಲ ಆರಂಭಿಸಿದರೆ ಮಗು ಕೇಳಲು ಮತ್ತು ಮಾತನಾಡಲು ಕಲಿಯಲು ಸಹಾಯವಾಗುತ್ತದೆ. ಮುಂದಿನ ಹಂತ ಯೋಜಿಸಲು ದಯವಿಟ್ಟು ಶ್ರವಣಶಾಸ್ತ್ರಜ್ಞರನ್ನು ಭೇಟಿ ಮಾಡಿ.",
+    te:"నమస్కారం. పరీక్షల ప్రకారం మీ బిడ్డ {code} కి వినికిడి లోపం ఉంది. {due} లోపు వినికిడి యంత్రాలు, సహాయం మొదలుపెడితే బిడ్డ వినడం, మాట్లాడటం నేర్చుకోవడానికి సహాయపడుతుంది. తదుపరి దశలు ప్లాన్ చేయడానికి దయచేసి ఆడియాలజిస్ట్‌ను కలవండి.",
+    hi:"नमस्ते। जाँच से पता चला है कि आपके शिशु {code} को सुनने में कमी है। {due} से पहले हियरिंग एड और सहायता शुरू करने से शिशु को सुनना और बोलना सीखने में मदद मिलती है। अगले कदम तय करने के लिए कृपया ऑडियोलॉजिस्ट से मिलें।" },
+  monitor:{ en:"Namaste. Your baby {code} passed the hearing screen. Because of a known risk factor, a hearing check is advised before {due}. Please book a visit with the audiologist.",
+    kn:"ನಮಸ್ಕಾರ. ನಿಮ್ಮ ಮಗು {code} ಶ್ರವಣ ತಪಾಸಣೆಯಲ್ಲಿ ಉತ್ತೀರ್ಣವಾಗಿದೆ. ಒಂದು ಅಪಾಯಕಾರಿ ಅಂಶ ಇರುವುದರಿಂದ {due} ಒಳಗೆ ಮತ್ತೊಮ್ಮೆ ಶ್ರವಣ ಪರೀಕ್ಷೆ ಸಲಹೆ ಮಾಡಲಾಗಿದೆ. ದಯವಿಟ್ಟು ಶ್ರವಣಶಾಸ್ತ್ರಜ್ಞರ ಭೇಟಿ ನಿಗದಿಪಡಿಸಿ.",
+    te:"నమస్కారం. మీ బిడ్డ {code} వినికిడి స్క్రీనింగ్‌లో పాస్ అయింది. ఒక ప్రమాద కారకం ఉన్నందున {due} లోపు మళ్లీ వినికిడి పరీక్ష చేయించాలని సూచిస్తున్నాం. దయచేసి ఆడియాలజిస్ట్ అపాయింట్‌మెంట్ తీసుకోండి.",
+    hi:"नमस्ते। आपका शिशु {code} श्रवण जाँच में पास हो गया है। एक जोखिम कारक होने के कारण {due} से पहले फिर से श्रवण जाँच की सलाह है। कृपया ऑडियोलॉजिस्ट से समय लें।" }
+};
+function reminder(b, n){
+  const tpl = MSG[n.key]?.[b.lang] || MSG[n.key]?.en; if (!tpl) return "";
+  const due = n.due < todayISO() ? addDays(todayISO(), 7) : n.due;   // overdue: ask for the coming week, not a past date
+  const dueTxt = new Date(due).toLocaleDateString(b.lang === "en" ? "en-IN" : b.lang + "-IN", {day:"numeric", month:"long", year:"numeric"});
+  return tpl.split("{code}").join(b.code).split("{due}").join(dueTxt);
+}
+
+/* ---- Rendering ---- */
+function render(){
+  $("#riskBox").innerHTML = $("#riskBox").innerHTML || `<div class="riskgrid">${RISKS.map((r,i)=>`<label class="check"><input type="checkbox" value="${i}"><span>${esc(r)}</span></label>`).join("")}</div>`;
+  const rows = babies.map(b => { const n = nextStep(b); return {b, n, u: urgency(n)}; });
+  const cnt = k => rows.filter(r => r.u.k === k).length;
+  const C = [["overdue","Overdue","var(--high)"],["soon","Due in 2 weeks","var(--mid)"],["ontrack","On track","var(--accent)"],["done","Done","var(--ok)"]];
+  $("#counts").innerHTML = C.map(([k,l,c]) => `<button type="button" class="count" style="--c:${c}" data-f="${k}" aria-pressed="${filter===k}"><b>${cnt(k)}</b><span>${l}</span></button>`).join("");
+  $("#filterNote").textContent = filter === "all" ? "" : `(${C.find(c=>c[0]===filter)[1].toLowerCase()}, tap again to show all)`;
+  const order = {overdue:0, soon:1, ontrack:2, done:3};
+  const list = rows.filter(r => filter === "all" || r.u.k === filter).sort((a,b) => order[a.u.k]-order[b.u.k] || (a.n.due||"9").localeCompare(b.n.due||"9"));
+  $("#list").innerHTML = list.length ? `<table class="rec"><thead><tr><th>Baby</th><th>Age</th><th>Next step</th><th>Status</th></tr></thead><tbody>${list.map(({b,n,u}) => {
+    const age = daysBetween(b.dob, todayISO());
+    return `<tr class="${b.id===selId?"sel":""}" data-bid="${b.id}" style="cursor:pointer"><td><button type="button" class="small" data-bid="${b.id}">${esc(b.code)}</button>${b.risk.length?` <span class="pill mid" title="Risk factors">Risk</span>`:""}</td>
+      <td class="num">${age < 60 ? age + " d" : Math.floor(age/30.4) + " mo"}</td>
+      <td>${esc(n.label)}<div class="track" style="--c:${u.c}">${["screen","diag","interv"].map((s,i)=>`<i class="${n.steps[s]?"done":(n.stage===i+1&&n.key!=="done")?"now":""}"></i>`).join("")}</div></td>
+      <td><span class="pill ${u.pill}">${esc(u.text)}</span></td></tr>`; }).join("")}</tbody></table>`
+    : `<p class="muted" style="margin:8px 0">${babies.length ? "No babies in this group." : "No babies yet. Add the first one on the left."}</p>`;
+  renderDetail();
+}
+function renderDetail(){
+  const b = babies.find(x => x.id === selId);
+  if (!b){ $("#detail").innerHTML = ""; return; }
+  const n = nextStep(b), u = urgency(n), msg = n.key !== "done" ? reminder(b, n) : "";
+  const scr = b.screens.slice().sort((x,y)=>x.date.localeCompare(y.date));
+  $("#detail").innerHTML = `<div class="panel">
+    <div class="head-row"><div><h3>${esc(b.code)}</h3><div class="muted small-text">Born ${esc(fmtDate(b.dob))}. Reminders in ${esc(LANG_NAMES[b.lang])}.${b.risk.length ? " Risk: " + esc(b.risk.map(i=>RISKS[i]).join("; ")) + "." : ""}</div></div>
+      <button type="button" class="small danger" id="bDel">Delete baby</button></div>
+    <p><b>Next step:</b> ${esc(n.label)} <span class="pill ${u.pill}">${esc(u.text)}</span></p>
+    ${msg ? `<h4 style="margin:14px 0 6px">Reminder for the family</h4><div class="msg" lang="${b.lang}" id="msg">${esc(msg)}</div>
+      <div class="actions"><button type="button" class="primary" id="share">Share</button><button type="button" id="copy">Copy</button></div>` : ""}
+    <h4 style="margin:18px 0 6px">Screens</h4>
+    ${scr.length ? `<table class="rec"><thead><tr><th>Date</th><th>Method</th><th>Right</th><th>Left</th></tr></thead><tbody>${scr.map(s=>`<tr><td>${esc(fmtDate(s.date))}</td><td>${esc(s.method)}</td><td>${s.R==="refer"?'<span class="pill high">Refer</span>':'<span class="pill ok">Pass</span>'}</td><td>${s.L==="refer"?'<span class="pill high">Refer</span>':'<span class="pill ok">Pass</span>'}</td></tr>`).join("")}</tbody></table>` : `<p class="muted small-text">None yet.</p>`}
+    <div class="row3"><label class="field">Date<input type="date" id="sDate" value="${todayISO()}"></label>
+      <label class="field">Method<select id="sMethod"><option>OAE</option><option>AABR</option></select></label>
+      <div></div>
+      <label class="field">Right ear<select id="sR"><option value="pass">Pass</option><option value="refer">Refer</option></select></label>
+      <label class="field">Left ear<select id="sL"><option value="pass">Pass</option><option value="refer">Refer</option></select></label></div>
+    <div class="actions"><button type="button" id="sAdd">Save screen</button></div>
+    <h4 style="margin:18px 0 6px">Diagnosis, intervention and review</h4>
+    <div class="row3">
+      <label class="field">Diagnostic evaluation<select id="dRes"><option value="">Not done</option><option value="normal" ${b.diag?.result==="normal"?"selected":""}>Hearing normal</option><option value="loss" ${b.diag?.result==="loss"?"selected":""}>Hearing loss confirmed</option></select></label>
+      <label class="field">Diagnosis date<input type="date" id="dDate" value="${b.diag?.date||""}"></label>
+      <label class="field">Intervention started<input type="date" id="iDate" value="${b.interv?.date||""}"></label>
+      <label class="field">Monitoring review done<input type="date" id="rDate" value="${b.review?.date||""}"></label>
+    </div>
+    <div class="actions"><button type="button" id="dSave">Save</button></div>
+  </div>`;
+}
+
+/* ---- Actions ---- */
+$("#bAdd").addEventListener("click", () => {
+  const code = $("#bCode").value.trim(), dob = $("#bDob").value;
+  if (!code || !dob){ $("#bErr").textContent = "Enter a baby code and date of birth."; return; }
+  if (dob > todayISO()){ $("#bErr").textContent = "Date of birth cannot be in the future."; return; }
+  $("#bErr").textContent = "";
+  const b = {id: uid(), code, dob, lang: $("#bLang").value, risk: $$("#riskBox input:checked").map(i => Number(i.value)), screens: [], diag:null, interv:null, review:null};
+  babies.push(b); selId = b.id; save(); $("#bCode").value = ""; $$("#riskBox input").forEach(i => i.checked = false); render(); toast("Baby added");
+});
+$("#counts").addEventListener("click", e => { const b = e.target.closest("[data-f]"); if (!b) return; filter = filter === b.dataset.f ? "all" : b.dataset.f; render(); });
+$("#list").addEventListener("click", e => { const r = e.target.closest("[data-bid]"); if (!r) return; selId = r.dataset.bid; render(); $("#detail").scrollIntoView({behavior:"smooth", block:"start"}); });
+$("#detail").addEventListener("click", async e => {
+  const b = babies.find(x => x.id === selId); if (!b) return;
+  if (e.target.id === "sAdd"){ b.screens.push({date: $("#sDate").value || todayISO(), method: $("#sMethod").value, R: $("#sR").value, L: $("#sL").value}); save(); render(); toast("Screen saved"); }
+  if (e.target.id === "dSave"){
+    const r = $("#dRes").value; b.diag = r ? {result: r, date: $("#dDate").value || todayISO()} : null;
+    b.interv = $("#iDate").value ? {date: $("#iDate").value} : null;
+    b.review = $("#rDate").value ? {date: $("#rDate").value} : null;
+    save(); render(); toast("Saved");
+  }
+  if (e.target.id === "copy" || e.target.id === "share"){
+    const text = $("#msg").textContent;
+    if (e.target.id === "share" && navigator.share){ try { await navigator.share({text}); return; } catch(err){ if (err.name === "AbortError") return; } }
+    try { await navigator.clipboard.writeText(text); toast("Copied. Paste it into WhatsApp or SMS."); } catch(err){ toast("Could not copy. Select the text and copy it."); }
+  }
+  if (e.target.id === "bDel" && confirm(`Delete ${b.code} from this device? This cannot be undone.`)){ babies = babies.filter(x => x.id !== b.id); selId = null; save(); render(); toast("Deleted"); }
+});
+$("#csv").addEventListener("click", () => {
+  const rows = [["baby_code","dob","family_language","risk_factors","screens","diagnosis","diagnosis_date","intervention_date","review_date","next_step","next_due","status"]];
+  babies.forEach(b => { const n = nextStep(b), u = urgency(n);
+    rows.push([b.code, b.dob, b.lang, b.risk.map(i=>RISKS[i]).join("; "), b.screens.map(s=>`${s.date} ${s.method} R-${s.R} L-${s.L}`).join("; "), b.diag?.result||"", b.diag?.date||"", b.interv?.date||"", b.review?.date||"", n.label, n.due||"", u.text]); });
+  downloadCSV(rows, `newborn-hearing-followup-${todayISO()}.csv`);
+});
+
+KIT.start({ i18n: I18N_APP, render, version: "0.1.0 (draft for clinical review)" });
+</script>
+</body>
+</html>

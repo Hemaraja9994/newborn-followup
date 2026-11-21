@@ -1,0 +1,11 @@
+{
+  "name": "Newborn Hearing Follow-up",
+  "short_name": "NHS Follow-up",
+  "description": "Track every baby through 1-3-6: screen by 1 month, diagnosis by 3 months, intervention by 6 months.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#F7F9FB",
+  "theme_color": "#17212E",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
+}
