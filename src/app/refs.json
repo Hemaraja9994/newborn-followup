@@ -1,0 +1,17 @@
+[
+  { "id": "jcih-136", "title": "The 1-3-6 benchmarks", "tags": ["jcih", "1-3-6", "screen", "diagnose", "intervene", "timeline", "ehdi", "benchmark"],
+    "text": "The Joint Committee on Infant Hearing recommends screening by 1 month of age, confirmatory diagnostic evaluation by 3 months for those who do not pass, and enrolment in early intervention by 6 months for confirmed hearing loss. Meeting these ages gives the best speech, language and development outcomes.",
+    "source": "Joint Committee on Infant Hearing. Year 2019 position statement. J Early Hear Detect Interv 4(2):1–44", "year": 2019, "url": "https://digitalcommons.usu.edu/jehdi/vol4/iss2/1/", "checked": "Nov 2026" },
+  { "id": "risk", "title": "Risk factors need later monitoring", "tags": ["risk factor", "monitoring", "late onset", "nicu", "cmv", "family history", "pass", "review"],
+    "text": "Some babies pass the newborn screen but have risk factors for later or progressive hearing loss — family history, NICU care, CMV, hyperbilirubinaemia, ototoxic drugs, syndromes. JCIH advises at least one audiological review by about 9 months, or sooner if there is concern.",
+    "source": "Joint Committee on Infant Hearing. Year 2019 position statement", "year": 2019, "url": "https://digitalcommons.usu.edu/jehdi/vol4/iss2/1/", "checked": "Nov 2026" },
+  { "id": "oae-aabr", "title": "OAE and AABR screening", "tags": ["oae", "aabr", "screen", "refer", "pass", "method", "ansd"],
+    "text": "Newborn screening uses otoacoustic emissions (OAE) or automatic auditory brainstem response (AABR). A “refer” means further testing is needed, not that the baby is deaf — many pass on rescreen. Babies with NICU stays should have AABR so that auditory neuropathy is not missed.",
+    "source": "Joint Committee on Infant Hearing; WHO newborn and infant hearing screening", "year": 2019, "url": "https://www.who.int/publications/i/item/9789240053526", "checked": "Nov 2026" },
+  { "id": "early-language", "title": "Why early matters for language", "tags": ["early intervention", "language", "outcomes", "6 months", "brain", "critical period"],
+    "text": "Children identified and supported by 6 months develop language on a par with hearing peers far more often than those identified later. The first months are a sensitive period for building the brain's hearing and language pathways, so delay is costly.",
+    "source": "Yoshinaga-Itano C, et al. Language of early- and later-identified children with hearing loss. Pediatrics 102(5):1161–1171", "year": 1998, "url": "https://pubmed.ncbi.nlm.nih.gov/9794949/", "checked": "Nov 2026" },
+  { "id": "lost", "title": "Loss to follow-up is the main failure", "tags": ["loss to follow-up", "ltf", "tracking", "reminder", "family", "program"],
+    "text": "The biggest weakness of screening programmes is babies who refer but never return for diagnosis or intervention. Clear tracking, reminders in the family's own language, and naming a responsible person for each baby are what keep babies in the 1-3-6 pathway.",
+    "source": "CDC EHDI programme; WHO newborn and infant hearing screening", "year": 2023, "url": "https://www.who.int/publications/i/item/9789240053526", "checked": "Nov 2026" }
+]
