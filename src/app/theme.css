@@ -1,0 +1,38 @@
+.theme-src{}
+/* ===== newborn-followup theme ===== */
+:root{
+  --color-paper: #F1FBF6;
+  --color-surface: #FFFFFF;
+  --color-ink: #154239;
+  --color-muted: #4B6762;
+  --color-line: #CBE6DD;
+  --color-track: #DBF0E8;
+  --color-accent: #0A6B4F;
+  --color-grid: #DCF1E9;
+  --font-sans: "Nunito Sans","Noto Sans Kannada","Noto Sans Telugu","Noto Sans Devanagari","Atkinson Hyperlegible",system-ui,sans-serif;
+  --font-display: "Fraunces","Noto Sans Kannada","Noto Sans Telugu","Noto Sans Devanagari","Atkinson Hyperlegible",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+  --color-paper: #0A1C18;
+  --color-surface: #102A24;
+  --color-ink: #E4F3EE;
+  --color-accent: #4FD6AF;
+  --color-grid: #13302A;
+  --color-muted: #A3B1C2;
+  --color-line: #2B3A4B;
+  --color-track: #22303F;
+  }
+}
+body{
+  background-image:
+    linear-gradient(var(--color-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--color-grid) 1px, transparent 1px);
+  background-size: 26px 26px;
+}
+h1,h2,h3,h4{ font-family: var(--font-display); }
+header.bg-ink{
+  background-image: radial-gradient(circle at 3px 3px, rgba(255,255,255,.08) 1.4px, transparent 0);
+  background-size: 20px 20px;
+}
+
